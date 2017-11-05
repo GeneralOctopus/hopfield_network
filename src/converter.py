@@ -9,9 +9,18 @@ def convert_to_binary(file_name):
     binary_file.save(file_name[0:-8:] + '_mono.png')
 
 
+def resize_file(file_name, output_size):
+    oryginal_image = Image.open(file_name)
+    oryginal_size = oryginal_image.size
+    changed_size = (output_size, (oryginal_size[1]*output_size)/oryginal_size[0])
+    
+    oryginal_image.thumbnail(changed_size, Image.ANTIALIAS)
+    oryginal_image.save(file_name[0:-8:] + '_resized.png')
+
+
 if __name__=='__main__':
     if len(sys.argv) < 2:
-        print "Usage: python converter.py file1.py file2.py ..."
+        print "Usage: python converter.py file1.py file2.py ... size"
 
-    for arg in sys.argv[1::]:
-        convert_to_binary(arg)
+    for arg in sys.argv[1:-1:]:
+        resize_file(arg, int(sys.argv[-1]))
