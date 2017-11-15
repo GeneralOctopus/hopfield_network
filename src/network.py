@@ -43,19 +43,22 @@ def prepare_weight_matrix():
     weight_matrix = matlib.zeros(shape=(120*120, 120*120), dtype=float)
     # fill_diagonal(weight_matrix, 0)
 
-# @profile
+@profile
 def train():
     global patterns
     global weight_matrix
+    global list_of_files
     weight_matrix = zeros(shape=(120*120, 120*120), dtype=float)
     i = 0
     for p in list_of_files:
         i+= 1
         pattern = convert_file_to_pattern(p)
-        weight_matrix += outer(pattern, pattern)
+        o = outer(pattern,pattern)
+        weight_matrix += o
         # pattern = None
         print ("trained %d of %d" % (i, len(list_of_files)))
         del pattern
+        del o
     weight_matrix /= len(list_of_files)
 
 
@@ -88,19 +91,27 @@ def test_on_oryginals():
             print("Fail in pattern no", i)
         del p
 
-print ("loading patterns")
-# load_patterns()
-list_of_files = get_list_of_files()
-print ("patterns loaded")
-# prepare_weight_matrix()
-print ("matrix prepared")
-print("train")
-train()
-print ("trained")
-print (weight_matrix)
-print(weight_matrix.max())
-print(sys.getsizeof(patterns), sys.getsizeof(weight_matrix))
-test_on_oryginals()
-print ("END")
 
+@profile
+def main():
+    global weight_matrix
+    global list_of_files
+
+    print ("loading patterns")
+    # load_patterns()
+    list_of_files = get_list_of_files()
+    print ("patterns loaded")
+    # prepare_weight_matrix()
+    print ("matrix prepared")
+    print("train")
+    train()
+    print ("trained")
+    print (weight_matrix)
+    print(weight_matrix.max())
+    print(sys.getsizeof(patterns), sys.getsizeof(weight_matrix))
+    test_on_oryginals()
+    print ("END")
+
+if __name__ == '__main__':
+    main()
 
