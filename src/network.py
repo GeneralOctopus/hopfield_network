@@ -4,7 +4,8 @@ import os
 from PIL import Image
 
 np.set_printoptions(threshold=np.inf)
-# DIR_NAME = '9x9'
+DIR_NAME = '9x9'
+N = 9
 DIR_NAME = 'converted_road_signs'
 N = 120
 
@@ -12,24 +13,6 @@ patterns=[]
 size = 0
 weight_matrix = None
 list_of_files = None
-
-
-def load_patterns():
-    img = None
-    for f in os.listdir('../'+DIR_NAME):
-        f = '../' + DIR_NAME + '/' + f
-        if os.path.isfile(f):
-            img = Image.open(f)
-            img = img.convert('1')
-            i =[]
-            if not img.width == img.height == N:
-                continue
-
-            for x in range(0, img.width):
-                for y in range(0, img.height):
-                    i.append(1.0 if img.getpixel((x,y)) & 0x1 else -1.0) #converted image has 255 if black, 0 if white)
-            patterns.append(i)
-
 
 def train_hebb():
     global patterns
@@ -55,7 +38,7 @@ def get_list_of_files():
         f = '../'+DIR_NAME+'/'+f
         if os.path.isfile(f):
             img = Image.open(f)
-            if img.height == img.width == N:
+            if img.height * img.width <= N*N:
                 l.append(f)
                 print(f)
     return l
@@ -66,9 +49,11 @@ def convert_file_to_pattern(f):
     img = img.convert('1')
     i = []
 
-    for x in range(0, img.width):
-        for y in range(0, img.height):
+    for x in range(0, img.height):
+        for y in range(0, img.width):
             i.append(1.0 if img.getpixel((y,x)) & 0x1 else -1.0)  # converted image has 255 if black, 0 if white)
+    if len(i) < N*N:
+        i += [-1] * (N*N - len(i))
     return np.asarray(i, dtype=float)
 
 
@@ -79,7 +64,8 @@ def test_images(output_dir='../recognized/'):
     for im in list_of_files:
 
         p = convert_file_to_pattern(im)
-        o = np.asarray(np.dot(p, weight_matrix))
+        o = recognize(p)
+        print(im)
 
         i = []
         for x in range(0, N*N):
@@ -89,6 +75,27 @@ def test_images(output_dir='../recognized/'):
         im1.putdata(i)
         im1.save(output_dir + os.path.basename(im))
 
+
+def recognize(pattern, max_steps=5):
+    global weight_matrix
+    for i in range(0, max_steps):
+        changes = False
+        pattern = np.asarray(np.dot(pattern, weight_matrix))
+
+        for j in range(0, N*N):
+            if 1 > pattern[0][j] > 0:
+                changes = True
+                pattern[0][j] = 1
+            elif -1 < pattern[0][j] < 0:
+                changes = True
+                pattern[0][j] = -1
+
+        print ("changes", changes)
+        if not changes:
+            print("stabilized after:", i)
+            return pattern
+
+    return pattern
 
 def pseudo_inversion():
     global list_of_files
