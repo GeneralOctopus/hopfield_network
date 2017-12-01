@@ -100,14 +100,12 @@ class NeuronNetwork:
             print "Pattern added to list to patterns"
         print "Patterns loaded!"
 
-    def _prepare_weight_matrix(self):
-        global weight_matrix
+    def train_network_by_hebb(self):
+        pass 
+        
 
-        # weight_matrix = matlib.rand(14400,14400)
-        size = len(patterns[0])
-        weight_matrix = matlib.zeros(shape=(self.size_x*self.size_x, self.size_y*self.size_y), dtype=float)
-        # fill_diagonal(weight_matrix, 0)            
-
+    def zeros_weight_matrix(self):
+        self.weight_matrix = zeros(shape=(size_x*size_x, size_y*size_y), dtype=float)
 
 
 def test_images(output_dir='/../recognized/'):
@@ -166,7 +164,8 @@ def main():
     global list_of_files
     hebb_network = NeuronNetwork("converted_road_signs", 60, 60)
     hebb_network.load_patterns()
-    print hebb_network.path_to_patterns
+    hebb_network.train_network_by_hebb()
+
 #    print hebb_network.weight_matrix
 #    list_of_files = get_list_of_files()
 
