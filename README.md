@@ -2,3 +2,4 @@
 
 Requirements:
 * python PIL library
+* numpy

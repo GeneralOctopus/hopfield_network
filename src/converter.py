@@ -22,5 +22,6 @@ if __name__=='__main__':
     if len(sys.argv) < 2:
         print "Usage: python converter.py file1.py file2.py ... size"
 
-    for arg in sys.argv[1:-1:]:
-        resize_file(arg, int(sys.argv[-1]))
+    for arg in sys.argv[1::]:
+        convert_to_binary(arg)
+
