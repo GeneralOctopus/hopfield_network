@@ -15,7 +15,7 @@ def add_noise(file_name, percentage):
         pixel_value = pixels[random_x, random_y] 
         image.putpixel((random_x, random_y), 0 if pixel_value>0 else 255)
  
-    image.save('test_images/noised_images/' + file_name[:-4:] + '_noise_percentage_' + percentage + '.png')
+    image.save('test_images/noised_images/noise_percentage_' + str(percentage) + '/' + file_name)
 
 
 def remove_image_block(file_name, percentage):
