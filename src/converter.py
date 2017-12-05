@@ -19,7 +19,20 @@ def add_noise(file_name, percentage):
 
 
 def remove_image_block(file_name, percentage):
-    pass
+    image = Image.open(file_name)
+    image_size = image.size
+    removed_lines = (image_size[1]*percentage)/100
+
+    for x in range(0, image_size[0]):
+        for y in range(0, removed_lines):
+            image.putpixel((x, y), 0)
+    image.save('test_images/cut_images/cut_at_begin_' + str(percentage) + '_percent/' + file_name)
+    
+    image = Image.open(file_name)
+    for x in range(0, image_size[0]):
+        for y in range(image_size[1]-removed_lines, image_size[1]):
+            image.putpixel((x, y), 0)
+    image.save('test_images/cut_images/cut_at_end_' + str(percentage) + '_percent/' + file_name)
 
 
 def convert_to_binary(file_name):
@@ -45,8 +58,16 @@ if __name__=='__main__':
 
     for arg in sys.argv[1:-1:]:
         print arg
-        add_noise(arg, int(sys.argv[-1]))
+        remove_image_block(arg, int(sys.argv[-1]))
 
+#if __name__=='__main__':
+#    if len(sys.argv) < 2:
+#        print "Usage: python converter.py file1.py file2.py ... percentage_of_noise"
+#
+#    for arg in sys.argv[1:-1:]:
+#        print arg
+#        add_noise(arg, int(sys.argv[-1]))
+#
 #if __name__=='__main__':
 #    if len(sys.argv) < 2:
 #        print "Usage: python converter.py file1.py file2.py ... size"
@@ -57,4 +78,3 @@ if __name__=='__main__':
 #        resize_file(arg, int(sys.argv[-1]))
 #        convert_to_binary('resized_files/' + sys.argv[-1] + 'x' + sys.argv[-1] + '/')
 #   
-
