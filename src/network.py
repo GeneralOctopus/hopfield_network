@@ -61,7 +61,7 @@ def convert_file_to_pattern(f):
 class NeuronNetwork:
     def __init__(self, path_to_patterns, size_x, size_y):
         self.path_to_patterns, self.size_x, self.size_y = (os.path.abspath(path_to_patterns) + '/'), size_x, size_y
-        self.weight_matrix = zeros(shape=(size_x*size_x, size_y*size_y), dtype=float)
+        self.weight_matrix = zeros(shape=(self.size_x*self.size_x, self.size_y*self.size_y), dtype=float)
         self.list_of_patterns = []
     
     def _convert_image_size(self, image):
@@ -101,11 +101,33 @@ class NeuronNetwork:
         print "Patterns loaded!"
 
     def train_network_by_hebb(self):
-        pass 
-        
+        print "Clear weight matrix before learning..."
+        self.zeros_weight_matrix()
+        print "Start learning by hebb method..."
+        for index, pattern in enumerate(self.list_of_patterns):
+            print index
+            i = index + 1
+            o = outer(pattern, pattern)
+            self.weight_matrix += o
+            print ("trained %d of %d" % (i, len(self.list_of_patterns)))
+            print len(self.list_of_patterns)
+            del pattern
+            del o
+            print len(self.list_of_patterns)
+        self.weight_matrix /= len(self.list_of_patterns)
+        self.weight_matrix = np.asmatrix(self.weight_matrix)
+        print "End learning by hebb method..."
+
+    def train_network_by_pseudo_inversion(self):
+        print "Clear weight matrix before learning..."
+        self.zeros_weight_matrix()
+        print "Start learning by pseudo inversion..."
+        self.list_of_patterns = np.asmatrix(self.list_of_patterns, dtype=float).transpose()
+        self.weight_matrix = np.dot(self.list_of_patterns, np.linalg.pinv(self.list_of_patterns))
+        print "End learning by pseudo inversion..."
 
     def zeros_weight_matrix(self):
-        self.weight_matrix = zeros(shape=(size_x*size_x, size_y*size_y), dtype=float)
+        self.weight_matrix = zeros(shape=(self.size_x*self.size_x, self.size_y*self.size_y), dtype=float)
 
 
 def test_images(output_dir='/../recognized/'):
