@@ -4,6 +4,7 @@ import os
 from PIL import Image
 
 np.set_printoptions(threshold=np.inf)
+
 DIR_NAME = '9x9'
 N = 9
 DIR_NAME = 'converted_road_signs'
@@ -57,12 +58,12 @@ def convert_file_to_pattern(f):
         i += [-1] * (N*N - len(i))
     return np.asarray(i, dtype=float)
 
-
 class NeuronNetwork:
     def __init__(self, path_to_patterns, size_x, size_y):
         self.path_to_patterns, self.size_x, self.size_y = (os.path.abspath(path_to_patterns) + '/'), size_x, size_y
         self.weight_matrix = zeros(shape=(self.size_x*self.size_x, self.size_y*self.size_y), dtype=float)
         self.list_of_patterns = []
+        self.load_patterns()
     
     def _convert_image_size(self, image):
         if image.width != self.size_x or image.height != self.size_y:
@@ -122,9 +123,22 @@ class NeuronNetwork:
         print "Clear weight matrix before learning..."
         self.zeros_weight_matrix()
         print "Start learning by pseudo inversion..."
-        self.list_of_patterns = np.asmatrix(self.list_of_patterns, dtype=float).transpose()
-        self.weight_matrix = np.dot(self.list_of_patterns, np.linalg.pinv(self.list_of_patterns))
+        self.x = []
+        for index, pattern in enumerate(self.list_of_patterns):
+            self.x.append(convert_file_to_pattern(pattern))
+
+        self.x = np.asmatrix(self.x, dtype=float).transpose()
+        self.weight_matrix = np.dot(self.x, np.linalg.pinv(self.x))
         print "End learning by pseudo inversion..."
+
+#    global list_of_files
+#    global weight_matrix
+#    x = []
+#    for i, f in enumerate(list_of_files):
+#        x.append(convert_file_to_pattern(f))
+#
+#    x = np.asmatrix(x, dtype=float).transpose()
+#    weight_matrix = np.dot(x, np.linalg.pinv(x))
 
     def zeros_weight_matrix(self):
         self.weight_matrix = zeros(shape=(self.size_x*self.size_x, self.size_y*self.size_y), dtype=float)
@@ -170,31 +184,13 @@ def recognize(pattern, max_steps=5):
 
     return pattern
 
-def pseudo_inversion():
-    global list_of_files
-    global weight_matrix
-    x = []
-    for i, f in enumerate(list_of_files):
-        x.append(convert_file_to_pattern(f))
-
-    x = np.asmatrix(x, dtype=float).transpose()
-    weight_matrix = np.dot(x, np.linalg.pinv(x))
-
 
 def main():
-    global weight_matrix
-    global list_of_files
-    hebb_network = NeuronNetwork("converted_road_signs", 60, 60)
-    hebb_network.load_patterns()
+    hebb_network = NeuronNetwork("tests/60x60/patterns/", 60, 60)
     hebb_network.train_network_by_hebb()
-
-#    print hebb_network.weight_matrix
-#    list_of_files = get_list_of_files()
-
-#    print("train hebb")
-#    train_hebb()
-#    print("trained, testing")
-
+    
+#    ps_inv_network = NeuronNetwork("tests/60x60/patterns/", 60, 60)
+#    ps_inv_network.train_network_by_pseudo_inversion()
 #    test_images(output_dir='../recognized/hebb/')
 #    print("END hebb")
 
