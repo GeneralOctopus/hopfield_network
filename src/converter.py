@@ -14,10 +14,8 @@ class Converter:
 
     def _resize_file(self, file_name):
         oryginal_image = Image.open(file_name)
-        oryginal_size = oryginal_image.size
-        changed_size = (self.size, (oryginal_size[1]*self.size)/oryginal_size[0])
+        oryginal_image = oryginal_image.resize((self.size, self.size), Image.ANTIALIAS)
         
-        oryginal_image.thumbnail(changed_size, Image.ANTIALIAS)
         return oryginal_image
 
     def _convert_to_binary(self, color_image):
