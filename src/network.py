@@ -174,10 +174,10 @@ class NeuronNetwork:
         self.zeros_weight_matrix()
         print "Start learning by pseudo inversion..."
         self.x = []
-#        for index, pattern in enumerate(self.list_of_patterns):
-#            self.x.append(pattern)
+        for index, pattern_path in enumerate(self.list_of_patterns):
+            self.x.append(convert_file_to_pattern(pattern_path))
 
-        self.x = np.asmatrix(self.list_of_patterns, dtype=float).transpose()
+        self.x = np.asmatrix(self.x, dtype=float).transpose()
         self.weight_matrix = np.dot(self.x, np.linalg.pinv(self.x))
         print "End learning by pseudo inversion..."
 
@@ -211,6 +211,10 @@ class NeuronNetwork:
                 im1.putdata(i)
                 im1.save(os.path.abspath(image_path) + os.path.basename(image_path)[::-7] + "_recognize.png" )
         
+    def test_image(self, image_path):
+        print "test image"
+        self.recognize_image(image_path)
+
     def test_cut_images(self, input_directory):
         print "Testing cut images..."
         number_of_recognized = 0
