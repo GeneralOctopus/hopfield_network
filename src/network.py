@@ -111,38 +111,36 @@ class NeuronNetwork:
     def _convert_image_size(self, image):
         if image.width != self.size_x or image.height != self.size_y:
             print "Converting file size to pattern:", str(self.size_x) + "x" + str(self.size_y)
-            image.size = (self.size_x, self.size_y)
-            changed_size = (self.size_x, self.size_y)
-            image.thumbnail(changed_size, Image.ANTIALIAS)
+            image = image.resize((self.size_x, self.size_y), Image.ANTIALIAS)
+
         return image
 
     def _convert_image_to_binary(self, image, depth):
         print "Converting file to binary"
-        gray_image = image.convert('L')
-        binary_file = gray_image.point(lambda x: 0 if x<depth else 1, '1')
-        return binary_file
+        image = image.convert('L')
+        new_image = []
+
+        for x in range(0, image.height):
+            for y in range(0, image.width):
+                new_image.append(1.0 if image.getpixel((y,x)) & 0x1 else -1.0)  # converted image has 255 if black, 0 if white)
+                if len(new_image) < self.size_x*self.size_y:
+                    new_image += [-1] * (self.size_x*self.size_y - len(new_image))
+        return np.asarray(new_image, dtype=float)
 
     def convert_file_to_pattern(self, image):
+        image = Image.open(image_path)
         image = self._convert_image_size(image)
         image = self._convert_image_to_binary(image, 128)
-        i = []
-    
-        for x in range(0, image.width):
-            for y in range(0, image.height):
-                i.append(float(image.getpixel((x,y)) & 0x1)) #converted image has 255 if black, 0 if white)
-        return np.asarray(i, dtype=float)
+        return image
 
     def load_patterns(self):
         print "Loading patterns, please wait..."
-        print self.path_to_patterns, 
+        print self.path_to_patterns 
         for image in os.listdir(self.path_to_patterns):
             image_path = self.path_to_patterns + image
             print "Loading pattern:", image_path
             if os.path.isfile(image_path):
-                image = Image.open(image_path)
-                converted_image = self.convert_file_to_pattern(image)
-                print converted_image.size
-                self.list_of_patterns.append(converted_image)
+                self.list_of_patterns.append(image_path)
                 print "Pattern added to list to patterns"
             else:
                 print "Wrong pattern"
@@ -153,28 +151,33 @@ class NeuronNetwork:
         self.zeros_weight_matrix()
         print "Start learning by hebb method..."
         for index, pattern in enumerate(self.list_of_patterns):
-            print index
             i = index + 1
             o = outer(pattern, pattern)
             self.weight_matrix += o
             print ("trained %d of %d" % (i, len(self.list_of_patterns)))
-            print len(self.list_of_patterns)
-            del pattern
-            del o
-            print len(self.list_of_patterns)
         self.weight_matrix /= len(self.list_of_patterns)
         self.weight_matrix = np.asmatrix(self.weight_matrix)
         print "End learning by hebb method..."
+
+#def pseudo_inversion():
+#    global list_of_files
+#    global weight_matrix
+#    x = []
+#    for i, f in enumerate(list_of_files):
+#        x.append(convert_file_to_pattern(f))
+#
+#    x = np.asmatrix(x, dtype=float).transpose()
+#    weight_matrix = np.dot(x, np.linalg.pinv(x))
 
     def train_network_by_pseudo_inversion(self):
         print "Clear weight matrix before learning..."
         self.zeros_weight_matrix()
         print "Start learning by pseudo inversion..."
         self.x = []
-        for index, pattern in enumerate(self.list_of_patterns):
-            self.x.append(pattern)
+#        for index, pattern in enumerate(self.list_of_patterns):
+#            self.x.append(pattern)
 
-        self.x = np.asmatrix(self.x, dtype=float).transpose()
+        self.x = np.asmatrix(self.list_of_patterns, dtype=float).transpose()
         self.weight_matrix = np.dot(self.x, np.linalg.pinv(self.x))
         print "End learning by pseudo inversion..."
 
@@ -185,6 +188,8 @@ class NeuronNetwork:
 
             for i in range(0, max_steps):
                 changes = False
+                print self.weight_matrix[0]
+                print self.weight_matrix[450]
                 pattern = np.asarray(np.dot(pattern, self.weight_matrix))
 
                 for j in range(0, self.size_x*self.size_y):
@@ -255,14 +260,13 @@ def main():
     ps_inv_network = NeuronNetwork(patterns_directory, size, size)
     ps_inv_network.train_network_by_pseudo_inversion()
 
-    ps_inv_network.test_network(tests_directories)
+#    ps_inv_network.test_network(tests_directories)
 #    test_images(output_dir='../recognized/hebb/')
 #    print("END hebb")
 
 #    print("train pseudo inversion")
 #    pseudo_inversion()
 #    test_images(output_dir='../recognized/pseudo_inv/')
-
 
 
 if __name__ == '__main__':
