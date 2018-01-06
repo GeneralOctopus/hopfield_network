@@ -55,8 +55,9 @@ class NeuronNetwork:
         print "Clear weight matrix before learning..."
         self.zeros_weight_matrix()
         print "Start learning by hebb method..."
-        for index, pattern in enumerate(self.list_of_patterns):
+        for index, pattern_path in enumerate(self.list_of_patterns):
             i = index + 1
+            pattern = Image.open(pattern_path)
             o = outer(pattern, pattern)
             self.weight_matrix += o
             print ("trained %d of %d" % (i, len(self.list_of_patterns)))
